@@ -1,0 +1,60 @@
+Task:
+pragma solidity 0.6.12; interface IYETIToken is IERC20 {function sendToSYETI(address _sender, uint256 _amount) external;function transfer(address recipient, uint256 amount) external returns (bool);}contract sYETIToken is IERC20, Domain, BoringOwnable {using BoringMath for uint256;using BoringMath128 for uint128;using BoringERC20 for IERC20;string public constant symbol = "sYETI";string public constant name = "Staked YETI Tokens";uint8 public constant decimals = 18;uint256 public override totalSupply;uint256 private constant LOCK_TIME = 69 hours;uint256 public effectiveYetiTokenBalance;uint256 public lastBuybackTime;uint256 public lastBuybackPrice;uint256 public lastRebaseTime;uint256 public transferRatio;IYETIToken public yetiToken;IERC20 public yusdToken;bool private addressesSet;mapping(address => bool) public validRouters;struct User {uint128 balance;uint128 lockedUntil;}mapping(address => User) public users;mapping(address => mapping(address => uint256)) public override allowance;mapping(address => uint256) public nonces;event Transfer(address indexed _from, address indexed _to, uint256 _value);event Approval(address indexed _owner, address indexed _spender, uint256 _value);event BuyBackExecuted(uint YUSDToSell, uint amounts0, uint amounts1);event Rebase(uint additionalYetiTokenBalance);function balanceOf(address user) public view override returns (uint256) {return users[user].balance;}function setAddresses(IYETIToken _yeti, IERC20 _yusd) external onlyOwner {require(!addressesSet, "addresses already set");yetiToken = _yeti;yusdToken = _yusd;addressesSet = true;}function _transfer(address from,address to,uint256 shares) internal {User memory fromUser = users[from];require(block.timestamp >= fromUser.lockedUntil, "Locked");if (shares != 0) {require(fromUser.balance >= shares, "Low balance");if (from != to) {require(to != address(0), "Zero address");User memory toUser = users[to];uint128 shares128 = shares.to128();users[from].balance = fromUser.balance - shares128;users[to].balance = toUser.balance + shares128;}}emit Transfer(from, to, shares);}function _useAllowance(address from, uint256 shares) internal {if (msg.sender == from) {return;}uint256 spenderAllowance = allowance[from][msg.sender];if (spenderAllowance != type(uint256).max) {require(spenderAllowance >= shares, "Low allowance");uint256 newAllowance = spenderAllowance - shares;allowance[from][msg.sender] = newAllowance;emit Approval(from, msg.sender, newAllowance);}}function transfer(address to, uint256 shares) public returns (bool) {_transfer(msg.sender, to, shares);return true;}function transferFrom(address from,address to,uint256 shares) public returns (bool) {_useAllowance(from, shares);_transfer(from, to, shares);return true;}function approve(address spender, uint256 amount) public override returns (bool) {allowance[msg.sender][spender] = amount;emit Approval(msg.sender, spender, amount);return true;}function increaseAllowance(address spender, uint256 amount) public override returns (bool) {allowance[msg.sender][spender] += amount;emit Approval(msg.sender, spender, amount);return true;}function DOMAIN_SEPARATOR() external view returns (bytes32) {return _domainSeparator();}bytes32 private constant PERMIT_SIGNATURE_HASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;function permit(address owner_,address spender,uint256 value,uint256 deadline,uint8 v,bytes32 r,bytes32 s) external override {require(owner_ != address(0), "Zero owner");require(block.timestamp < deadline, "Expired");require(ecrecover(_getDigest(keccak256(abi.encode(PERMIT_SIGNATURE_HASH, owner_, spender, value, nonces[owner_]++, deadline))), v, r, s) ==owner_,"Invalid Sig");allowance[owner_][spender] = value;emit Approval(owner_, spender, value);}function mint(uint256 amount) public returns (bool) {User memory user = users[msg.sender];uint256 shares = totalSupply == 0 ? amount : (amount * totalSupply) / effectiveYetiTokenBalance;user.balance += shares.to128();user.lockedUntil = (block.timestamp + LOCK_TIME).to128();users[msg.sender] = user;totalSupply += shares;yetiToken.sendToSYETI(msg.sender, amount);effectiveYetiTokenBalance = effectiveYetiTokenBalance.add(amount);emit Transfer(address(0), msg.sender, shares);return true;}function _burn(address from,address to,uint256 shares) internal {require(to != address(0), "Zero address");User memory user = users[from];require(block.timestamp >= user.lockedUntil, "Locked");uint256 amount = (shares * effectiveYetiTokenBalance) / totalSupply;users[from].balance = user.balance.sub(shares.to128());totalSupply -= shares;yetiToken.transfer(to, amount);effectiveYetiTokenBalance = effectiveYetiTokenBalance.sub(amount);emit Transfer(from, address(0), shares);}function burn(address to, uint256 shares) public returns (bool) {_burn(msg.sender, to, shares);return true;}function burnFrom(address from,address to,uint256 shares) public returns (bool) {_useAllowance(from, shares);_burn(from, to, shares);return true;}function buyBack(address _routerAddress, uint256 _YUSDToSell, uint256 _YETIOutMin) external onlyOwner {require(_YUSDToSell != 0, "Zero amount");require(yusdToken.balanceOf(address(this)) >= _YUSDToSell, "Not enough YUSD in contract");_buyBack(_routerAddress, _YUSDToSell, _YETIOutMin);}function publicBuyBack(address _routerAddress) external {uint256 YUSDBalance = yusdToken.balanceOf(address(this));require(YUSDBalance != 0, "No YUSD in contract");require(lastBuybackTime + 169 hours < block.timestamp, "Can only publicly buy back every 169 hours");uint256 YUSDToSell = div(YUSDBalance.mul(5), 100);_buyBack(_routerAddress, YUSDToSell, 0);}function _buyBack(address _routerAddress, uint256 _YUSDToSell, uint256 _YETIOutMin) internal {require(validRouters[_routerAddress] == true, "Invalid router passed in");require(yusdToken.approve(_routerAddress, 0));require(yusdToken.increaseAllowance(_routerAddress, _YUSDToSell));lastBuybackTime = block.timestamp;uint256[] memory amounts = IsYETIRouter(_routerAddress).swap(_YUSDToSell, _YETIOutMin, address(this));lastBuybackPrice = div(amounts[0].mul(1e18), amounts[1]);emit BuyBackExecuted(_YUSDToSell, amounts[0], amounts[1]);}function rebase() external {require(block.timestamp >= lastRebaseTime + 8 hours, "Can only rebase every 8 hours");uint256 yetiTokenBalance = yetiToken.balanceOf(address(this));uint256 adjustedYetiTokenBalance = yetiTokenBalance.sub(effectiveYetiTokenBalance);uint256 valueOfContract = _getValueOfContract(adjustedYetiTokenBalance);uint256 amountYetiToRebase = div(valueOfContract.mul(transferRatio), 1e18);if (amountYetiToRebase > adjustedYetiTokenBalance) {amountYetiToRebase = adjustedYetiTokenBalance;}effectiveYetiTokenBalance = effectiveYetiTokenBalance.add(amountYetiToRebase);lastRebaseTime = block.timestamp;emit Rebase(amountYetiToRebase);}function _getValueOfContract(uint _adjustedYetiTokenBalance) internal view returns (uint256) {uint256 yusdTokenBalance = yusdToken.balanceOf(address(this));return div(yusdTokenBalance.mul(1e18), lastBuybackPrice).add(_adjustedYetiTokenBalance);}function setTransferRatio(uint256 newTransferRatio) external onlyOwner {require(newTransferRatio != 0, "Zero transfer ratio");require(newTransferRatio <= 1e18, "Transfer ratio too high");transferRatio = newTransferRatio;}function addValidRouter(address _routerAddress) external onlyOwner {require(_routerAddress != address(0), "Invalid router address");validRouters[_routerAddress] = true;}function removeValidRouter(address _routerAddress) external onlyOwner {validRouters[_routerAddress] = false;}function div(uint256 a, uint256 b) internal pure returns (uint256 c) {require(b != 0, "BoringMath: Div By 0");return a / b;}}
+
+Config:
+ChatEnvConfig.clear_structure: True
+ChatEnvConfig.git_management: False
+ChatEnvConfig.gui_design: True
+
+
+Roster:
+Chief Executive Officer, Counselor, Security Analyst, Solidity Programming Expert, Security Testing Engineer
+
+Modality:
+
+
+Ideas:
+ As the CEO, I acknowledge the comprehensive security analysis provided. Let's refine the suggestions to ensure we deliver actionable and impactful recommendations to our client. Here are my thoughts on the points you've raised:
+
+1. **Reentrancy Guard**: I agree that a reentrancy guard is crucial. We should implement the `nonReentrant` modifier from OpenZeppelin's ReentrancyGuard contract to critical functions.
+
+2. **Integer Overflow and Underflow**: The use of `BoringMath` is good, but we should perform a thorough review to ensure all arithmetic operations are indeed using safe math practices.
+
+3. **Locking Mechanism**: We need to audit the locking mechanism to confirm there are no loopholes that allow bypassing the lock period.
+
+4. **Access Control**: We should consider implementing a more robust access control mechanism, potentially using OpenZeppelin's `AccessControl` contract for role-based permissions.
+
+5. **Permit Function**: The current implementation seems standard, but we should add additional checks and tests to ensure the security of the signature verification process.
+
+6. **Buyback Mechanism**: We must verify the integrity of the `IsYETIRouter` contract and consider implementing checks to prevent potential manipulation or attacks stemming from this interaction.
+
+7. **Decentralization and Trust**: Introducing a governance system could be beneficial for decentralization. We could suggest a DAO structure for decision-making on critical parameters.
+
+8. **Contract Upgradeability**: If the contract is intended to be upgradeable, we should use a proxy pattern and ensure that the upgrade process is secure and controlled by a governance mechanism.
+
+9. **Input Validation**: We should enforce strict checks on inputs across all functions to prevent erroneous transactions.
+
+10. **Error Messages**: More descriptive error messages will improve the contract's usability and debuggability. We should revise the messages to be more informative.
+
+11. **Gas Optimization**: We should review the contract for potential gas optimizations, such as in the `approve` function, as you've mentioned.
+
+12. **Event Emissions**: All significant state changes should indeed emit events. We'll ensure that the contract adheres to this best practice.
+
+13. **Testing and Audits**: Comprehensive testing and an external audit are mandatory before deployment. We should facilitate this process for our client.
+
+14. **Documentation**: Proper documentation is essential for maintenance and future audits. We'll ensure that the contract is well-documented.
+
+Let's proceed to finalize our suggestions based on these refined points.
+
+Language:
+
+
+Code_Version:
+0.0
+
+Proposed_images:
+0
+
+Incorporated_images:
+0
+

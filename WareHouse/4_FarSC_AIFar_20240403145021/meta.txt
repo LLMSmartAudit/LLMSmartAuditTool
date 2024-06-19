@@ -1,0 +1,30 @@
+Task:
+pragma solidity ^0.8.0;contract GasOracle is IOracle, Ownable {using LibMath for uint256;IChainlinkOracle public gasOracle;IChainlinkOracle public priceOracle;uint8 public override decimals = 18;uint256 private constant MAX_DECIMALS = 18;constructor(address _priceOracle, address _gasOracle) {gasOracle = IChainlinkOracle(_gasOracle);priceOracle = IChainlinkOracle(_priceOracle);}function latestAnswer() external view override returns (uint256) {uint256 gasPrice = uint256(gasOracle.latestAnswer());uint256 ethPrice = uint256(priceOracle.latestAnswer());uint256 result = PRBMathUD60x18.mul(gasPrice, ethPrice);return result;}function toWad(uint256 raw, IChainlinkOracle _oracle) internal view returns (uint256) {IChainlinkOracle oracle = IChainlinkOracle(_oracle);uint8 _decimals = oracle.decimals();require(_decimals <= MAX_DECIMALS, "GAS: too many decimals");uint256 scaler = uint256(10**(MAX_DECIMALS - _decimals));return raw * scaler;}function setGasOracle(address _gasOracle) public onlyOwner {require(_gasOracle != address(0), "address(0) given");gasOracle = IChainlinkOracle(_gasOracle);}function setPriceOracle(address _priceOracle) public onlyOwner {require(_priceOracle != address(0), "address(0) given");priceOracle = IChainlinkOracle(_priceOracle);}function setDecimals(uint8 _decimals) external {decimals = _decimals;}}
+
+Config:
+ChatEnvConfig.clear_structure: True
+ChatEnvConfig.git_management: False
+ChatEnvConfig.gui_design: True
+
+
+Roster:
+Chief Executive Officer, Counselor, Security Analyst, Solidity Programming Expert, Security Testing Engineer
+
+Modality:
+
+
+Ideas:
+  After thorough analysis, the following enhancements are suggested: Implement Solidity 0.8.0's built-in overflow checks or verify `PRBMathUD60x18` library's safety, reconsider the necessity and safety of `setDecimals`, support multiple oracles for redundancy, improve input validation and error messages, review `toWad` function's visibility, optimize gas usage, consider contract upgradeability, emit events for critical state changes, secure `setDecimals` with `onlyOwner`, add NatSpec documentation, and ensure comprehensive testing and auditing.
+
+Language:
+
+
+Code_Version:
+0.0
+
+Proposed_images:
+0
+
+Incorporated_images:
+0
+

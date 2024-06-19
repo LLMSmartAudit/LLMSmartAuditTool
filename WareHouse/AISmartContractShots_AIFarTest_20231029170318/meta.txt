@@ -1,0 +1,42 @@
+Task:
+#pragma solidity ^0.4.25;contract Token {function transfer(address receiver, uint amount) public;function balanceOf(address receiver) public returns (uint);}contract Axioms {Airdrop[] public airdrops;address public owner;constructor() public {owner = msg.sender;}modifier minEth() {require(msg.value >= 200000000000000000);_;}modifier onlyOwner() {require(msg.sender == owner);_;}struct Airdrop {string name;uint id;uint tokenAmount;uint countDown;uint timeStamp;uint gasFeePaid;uint decimals;address distributor;Token tokenSC;}function addNewAirdrop(string _name,uint _tokenAmount,uint _countDown,address _smartContract,uint _decimals) public payable minEth {Token t = Token(_smartContract);if (t.balanceOf(this) >= _tokenAmount) {uint lastIndex = airdrops.length++;Airdrop storage airdrop = airdrops[lastIndex];airdrop.name = _name;airdrop.id = lastIndex;airdrop.decimals = _decimals;airdrop.tokenAmount = _tokenAmount;airdrop.countDown = _countDown;airdrop.gasFeePaid = msg.value;airdrop.timeStamp = now;airdrop.distributor = msg.sender;airdrop.tokenSC = Token(_smartContract);} elserevert("Air Drop not added, Please make sure you send your ERC20 tokens to the smart contract before adding new airdrop");}function distributeAirdrop(uint index,address[] _addrs,uint[] _vals) public onlyOwner {Airdrop memory airdrop = airdrops[index];if (airdrop.countDown <= now) {for (uint i = 0; i < _addrs.length; ++i) {airdrop.tokenSC.transfer(_addrs[i], _vals[i]);}} else revert("Distribution Failed: Count Down not gone yet");}function refoundTokens(uint index) public onlyOwner {Airdrop memory airdrop = airdrops[index];airdrop.tokenSC.transfer(airdrop.distributor, airdrop.tokenAmount);}function transferGasFee(uint index) public onlyOwner {Airdrop memory airdrop = airdrops[index];owner.transfer(airdrop.gasFeePaid);}}#
+
+Config:
+ChatEnvConfig.clear_structure: True
+ChatEnvConfig.git_management: False
+ChatEnvConfig.gui_design: True
+
+
+Roster:
+Chief Executive Officer, Counselor, Security Analyst, Solidity Programming Expert, Security Testing Engineer
+
+Modality:
+
+
+Ideas:
+ Lack of Gas Limit Considerations.
+
+VULNERABILITY: Lack of Gas Limit Considerations
+
+DETAILED DESCRIPTION: The contract does not consider the gas limit when executing the `distributeAirdrop` function. This function performs a loop to transfer tokens to multiple addresses. If the number of addresses or the amount of tokens to be transferred is large, it can potentially consume a significant amount of gas. If the gas consumed exceeds the gas limit, the transaction will fail and the distribution will not be completed.
+
+RECOMMENDED MITIGATION/FIX: To mitigate this vulnerability, you should consider implementing a gas limit check before executing the loop. You can use the `gasleft()` function to check the remaining gas and compare it with an estimated gas consumption for each iteration of the loop. If the estimated gas consumption exceeds the remaining gas, you can stop the loop and revert the transaction. Additionally, you can provide a mechanism to distribute the tokens in batches to avoid consuming excessive gas in a single transaction.
+
+Please note that the recommended mitigation is a general approach, and the specific implementation details may vary based on your requirements and the complexity of the contract.
+
+It is important to thoroughly test and validate the updated code to ensure it functions as intended and does not introduce any new vulnerabilities.
+
+Remember to always follow security best practices and conduct a comprehensive security audit of your smart contract before deployment.
+
+Language:
+
+
+Code_Version:
+0.0
+
+Proposed_images:
+0
+
+Incorporated_images:
+0
+

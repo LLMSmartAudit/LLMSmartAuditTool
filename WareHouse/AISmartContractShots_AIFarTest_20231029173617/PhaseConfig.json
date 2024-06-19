@@ -1,0 +1,258 @@
+{
+    "ContractAnalysis": {
+        "assistant_role_name": "Security Analyst",
+        "user_role_name": "Chief Executive Officer",
+        "phase_prompt": [
+            "We excel in generating innovative approaches and enhancements for Solidity smart contract code.",
+            "Here's a Solidity contract provided by the user: \"{task}\".",
+            "As the {assistant_role}, our primary objective is to brainstorm potential improvements or related ideas for this specific contract code. Engage with me in a focused discussion to ensure we deliver the most impactful suggestion to the user.",
+            "Note that our conversation should be centered exclusively on the provided Solidity contract code. Once we've collectively refined our suggestions and achieved unanimous agreement, the discussion should be concluded by any participant with a response starting with <INFO>, followed directly by the final idea or enhancement suggestion, e.g. \"<INFO> Implementing a multi-sig wallet mechanism for added security in transactions\"."
+        ]
+    },
+    "ArithmeticDetector": {
+        "assistant_role_name": "Security Analyst",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Given the user's task and the brainstorming ideas provided:",
+            "Task: \"{task}\".",
+            "Ideas: \"{ideas}\".",
+            "As the {assistant_role}, your primary objective is to conduct a comprehensive inspection of the provided contract code, with a particular focus on identifying vulnerabilities related to Integer Overflow OR Underflow. There are two cases, the contract may have Integer Overflow/Underflow vulnerabilities:",
+            "1. When the result of an arithmetic operation exceeds the maximum or falls below the minimum value that can be stored in the data type being used in the contract code.", 
+            "2. The contract does not include any checks for integer overflow/underflow when performing calculations involving tokens and prices.",
+            "If you identify all Integer Overflow/Underflow vulnerabilities, responding with: \"<INFO> Integer Overflow/Underflow Identified .\" ", 
+            "For each vulnerability identified, use the following format:",
+            "```",
+            "VULNERABILITY NAME or TYPE",
+            "'''",
+            "DETAILED DESCRIPTION of the vulnerability, AND recommended mitigation/fix with no upgrade code.",
+            "'''",
+            "```",
+            "If you don't find any vulnerabilities, responding only with: \"<INFO> No Integer Overflow/Underflow.\""          
+        ]
+    },
+    "ReentrancyDetector": {
+        "assistant_role_name": "Security Analyst",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Given the user's task and the brainstorming ideas provided:",
+            "Task: \"{task}\".",
+            "Ideas: \"{ideas}\".",
+            "As the {assistant_role}, your primary objective is to conduct a comprehensive inspection of the provided contract code, with a particular focus on identifying vulnerabilities related to Reentrancy attacks. Reentrancy attacks occurs when an attacker can create a malicious contract that calls some function repeatedly before the balance is updated, allowing them to drain the contract's funds. It does not follow the checks-effects-interactions pattern",
+            "If you identify Reentrancy vulnerability, please respond with: \"<INFO> Reentrancy Identified.\"", 
+            "For each vulnerability identified, use the following format:",
+            "```",
+            "VULNERABILITY NAME or TYPE",
+            "'''",
+            "DETAILED DESCRIPTION of the vulnerability, AND recommended mitigation/fix with no upgrade code",
+            "'''",
+            "```",
+            "If you don't find any vulnerabilities, respond only with: \"<INFO> No Reentrancy.\""   
+        ]
+    },
+    "UncheckedSendDetector": {
+        "assistant_role_name": "Security Analyst",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Given the user's task and the brainstorming ideas provided:",
+            "Task: \"{task}\".",
+            "Ideas: \"{ideas}\".",
+            "As the {assistant_role}, your primary objective is to perform a thorough and detailed inspection of the provided contract code, with a particular focus on identifying vulnerabilities related to Unchecked External Calls. There are three cases, the contract may have Unchecked External Calls:",
+            "1. When external calls are not adequately checked, the calling contract may execute code in the external contract without checking the external contract's behavior is as expected.",
+            "2. When the external contract's code is not trusted or its behavior is unpredictable, it can compromise the overall security and stability of the calling contract.",
+            "3. When the execution of `send` function calls fails, the contract does not handle errors. The contract does not provide any mechanism to handle or revert the transaction, potentially resulting in a loss of funds.",
+            "If you identify Unchecked External Calls, please respond with: \"<INFO> Unchecked External Calls Identified.\".",
+            "For each vulnerability identified, use the following format:",
+            "```",
+            "VULNERABILITY NAME or TYPE",
+            "'''",
+            "DETAILED DESCRIPTION of the vulnerability, AND recommended mitigation/fix with no upgrade code",
+            "'''",
+            "```",
+            "If you don't find any vulnerabilities, respond only with: \"<INFO> NO Unchecked External Calls.\"" 
+        ]
+    },
+    "DelegatecallDetector": {
+        "assistant_role_name": "Security Analyst",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Given the user's task and the brainstorming ideas provided:",
+            "Task: \"{task}\".",
+            "Ideas: \"{ideas}\".",
+            "As the {assistant_role}, your primary objective is to conduct a comprehensive inspection of the provided contract code, with a particular focus on identifying vulnerabilities related to Delegatecall Usage vulnerabilities. There are two cases, the code may have Delegatecall Usage vulnerabilities:",
+            "1. When a contract uses `delegatecall` to another external contract code, it can be dangerous as it allows the called contract to access the storage and state of the calling contract. If the called contract is malicious or poorly implemented, it can lead to unexpected behavior and potential security vulnerabilities.",
+            "2. When using `delegatecall`, uninitialized storage variables in the calling contract can be overwritten by the called contract, leading to unexpected and potentially insecure behavior.",
+            "If you identify Delegatecall Usage, please respond with: \"<INFO> Delegatecall Usage Identified.\".", 
+            "For each vulnerability identified, use the following format:",
+            "```",
+            "VULNERABILITY NAME or TYPE",
+            "'''",
+            "DETAILED DESCRIPTION of the vulnerability, AND recommended mitigation/fix with no upgrade code",
+            "'''",
+            "```",
+            "If you don't find any vulnerabilities, respond only with: \"<INFO> NO Delegatecall Use.\"" 
+        ]
+    },
+    "TODDetector": {
+        "assistant_role_name": "Security Analyst",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Given the user's task and the brainstorming ideas provided:",
+            "Task: \"{task}\".",
+            "Ideas: \"{ideas}\".",
+            "As the {assistant_role}, your primary objective is to perform a thorough and detailed inspection of the provided contract code, with a particular focus on identifying vulnerabilities related to Transactions Order Dependence. This vulnerability occurs when a contract's behavior depends on the order of transactions, which can lead to unintended outcomes and provide attackers with opportunities to exploit transaction sequencing.",
+            "Please conduct a thorough analysis and provide the following information:",
+            "1. Review the contract's code logic to identify any potential areas where the order of transaction execution might have an impact on the contract's behavior.",
+            "2. Examine critical functions, particularly those involving fund transfers or resource allocation, to ensure they are not susceptible to Transactions Order Dependence.",
+            "3. Investigate scenarios in which gas prices can be manipulated to change the order of transaction execution.",
+            "If you identify Transactions Order Dependence, respond with: \"<INFO> Transactions Order Dependence Identified.\"",
+            "For each vulnerability identified, use the following format:",
+            "```",
+            "VULNERABILITY NAME or TYPE",
+            "'''",
+            "DETAILED DESCRIPTION of the vulnerability, AND recommended mitigation/fix with no upgrade code",
+            "'''",
+            "```",
+            "If you don't find any vulnerabilities, respond only with: \"<INFO> NO Transactions Order Dependence.\""     
+        ]
+    },
+    "TimeManiDetector": {
+        "assistant_role_name": "Security Analyst",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Given the user's task and the brainstorming ideas provided:",
+            "Task: \"{task}\".",
+            "Ideas: \"{ideas}\".",
+            "As the {assistant_role}, your primary objective is to perform a thorough and detailed inspection of the provided contract code, with a particular focus on identifying vulnerabilities related to Timestamp Dependency. It occurs when a smart contract's logic or decision-making relies on the timestamp of block creation (`block.timestamp`) or the current block's timestamp. There are three cases, the contract may have Timestamp Dependency vulnerabilities:",
+            "1. Relying on the `block.timestamp value` OR the current timestamp `now` variable for time-based operations, such as freezing tokens", 
+            "2. Using `block.timestamp` to generating randomness.",
+            "3. Using the `block.timestamp` to check for specific time conditions", 
+            "If you identify Timestamp Dependency, respond with: \"<INFO> Timestamp Dependency.\"",
+            "For each vulnerability identified, use the following format:",
+            "```",
+            "VULNERABILITY NAME or TYPE",
+            "'''",
+            "DETAILED DESCRIPTION of the vulnerability, AND recommended mitigation/fix with no upgrade code",
+            "'''",
+            "```",
+            "If you don't find any vulnerabilities, respond only with: \"<INFO> NO Timestamp Dependency.\""     
+        ]
+    },
+    "BadRandDetector": {
+        "assistant_role_name": "Security Analyst",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Given the user's task and the brainstorming ideas provided:",
+            "Task: \"{task}\".",
+            "Ideas: \"{ideas}\".",
+            "As the {assistant_role}, your primary objective is to perform a thorough and detailed inspection of the provided contract code, with a particular focus on identifying vulnerabilities related to Bad Randomness.  There are two cases, the code may have Bad Randomness vulnerabilities:",
+            "1. Reliance on blockhash for randomness, which pertains to the flawed generation of random numbers within smart contracts. Random numbers often influence the decisions or outcomes of contract functionalities. If the process of random number generation is compromised, adversaries may predict the contract outcome, leading to potential exploitation.",
+            "2. Reliance on blocknumber for randomness, which will be used by attacker if he control the number of blocks mined in a given time frame. If the process of random number generation is compromised, adversaries may predict the contract outcome, leading to potential",
+            "If you identify Reliance on blockhash for randomness, respond with: \"<INFO> Bad Randomness Identified.\"",
+            "For each vulnerability identified, use the following format:",
+            "```",
+            "VULNERABILITY NAME or TYPE",
+            "'''",
+            "DETAILED DESCRIPTION of the vulnerability, AND recommended mitigation/fix with no upgrade code",
+            "'''",
+            "```",
+            "If you don't find any vulnerabilities, respond only with: \"<INFO> NO Bad Randomness.\""  
+        ]
+    },
+    "TXRelianceDetector": {
+        "assistant_role_name": "Security Analyst",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Given the user's task and the brainstorming ideas provided:",
+            "Task: \"{task}\".",
+            "Ideas: \"{ideas}\".",
+            "As the {assistant_role}, your primary objective is to perform a thorough and detailed inspection of the provided contract code, with a particular focus on identifying vulnerabilities related to Reliance on `tx.origin`. There are one cases, the code may have Reliance on `tx.origin` vulnerabilities",   
+            "1. When the contract relies on `tx.origin` to verify the owner of the contract or ensure that only the contract owner can call a withdraw function, it's important to note that `tx.origin` represents the original sender of the transaction, which can differ from the immediate caller, making it an unsafe access control method in contract-to-contract interactions.",
+            "If you identify Reliance on `tx.origin`, respond with: \"<INFO> Unsafe `tx.origin` Identified.\"",
+            "For each vulnerability identified, use the following format:",
+            "```",
+            "VULNERABILITY NAME or TYPE",
+            "'''",
+            "DETAILED DESCRIPTION of the vulnerability, AND recommended mitigation/fix with no upgrade code",
+            "'''",
+            "```",
+            "If you don't find any vulnerabilities, respond only with: \"<INFO> NO Unsafe `tx.origin`.\""  
+        ]
+    },
+    "SuicideDetector": {
+        "assistant_role_name": "Security Analyst",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Given the user's task and the brainstorming ideas provided:",
+            "Task: \"{task}\".",
+            "Ideas: \"{ideas}\".",
+            "As the {assistant_role}, your primary objective is to perform a thorough and detailed inspection of the provided contract code, with a particular focus on identifying vulnerabilities related to Lack of Restriction on `selfdestruct`. This vulnerability occurs when a function in contract allow anyone to call them and self-destruct the contract, which can lead to the loss of all funds and the inability to recover the contract.",
+            "If you identify Lack of Restriction on `selfdestruct`, respond with: \"<INFO> Suicide Identified.\"",
+            "For each vulnerability identified, use the following format:",
+            "```",
+            "VULNERABILITY NAME or TYPE",
+            "'''",
+            "DETAILED DESCRIPTION of the vulnerability, AND recommended mitigation/fix with no upgrade code",
+            "'''",
+            "```",
+            "If you don't find any vulnerabilities, respond only with: \"<INFO> NO Suicide.\""  
+        ]
+    },
+    "GasLimitDetector": {
+        "assistant_role_name": "Security Analyst",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Given the user's task and the brainstorming ideas provided:",
+            "Task: \"{task}\".",
+            "Ideas: \"{ideas}\".",
+            "As the {assistant_role}, your primary objective is to perform a thorough and detailed inspection of the provided contract code, , with a particular focus on identifying vulnerabilities related to Gas Limit. The vulnerability arises when the contract does not consider the gas limit when executing certain functions. There are two cases, the code may have Gas Limit vulnerabilities", 
+            "1. Lack of gas limit considerations: the contract does not consider the gas limit when executing a function, and the function performs a while loop that can potentially iterate a large number of times, leading to out-of-gas errors and failed transactions.",
+            "2. Potential Denial of Service (DoS) Attacks: The contracts do not include any gas limit checks or other mechanisms to prevent DoS attacks. This can allow malicious actors to perform resource-intensive operations, leading to network congestion or contract unavailability.",
+            "If you identify Gas Limit vulnerabilities, respond with: \"<INFO> NO Gas Limit.\"",
+            "For each vulnerability identified, use the following format:",
+            "```",
+            "VULNERABILITY NAME or TYPE",
+            "'''",
+            "DETAILED DESCRIPTION of the vulnerability, AND recommended mitigation/fix with no upgrade code",
+            "'''",
+            "```",
+            "If you don't find any vulnerabilities, respond only with: \"<INFO> Gas Limit.\"" 
+        ]
+    },
+    "BugsSummary": {
+        "assistant_role_name": "Solidity Programming Expert",
+        "user_role_name": "Security Analyst",
+        "phase_prompt": [
+            "Below are the details of our smart contract codes and their corresponding analysis reports:",
+            "Task: \"{task}\".",
+            "As per the provided analysis reports, please extract and succinctly summarize all the security vulnerabilities identified within the contract codes. The goal is to have a consolidated and clear overview of all security issues present. Conclude the summary with a comprehensive analysis report."
+        ]
+    },
+    "TestBugsSummary": {
+        "assistant_role_name": "Security Testing Engineer",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Below are the details of our target smart contract codes and their associated test reports:",
+            "Task: \"{task}\".",
+            "Existing Test Reports:",
+            "\"{test_reports}\"",
+            "Based on the given test reports, please identify and succinctly summarize all bugs causing issues within the contract codes. The objective is to obtain a clear and consolidated overview of all identified bugs. Conclude with a comprehensive test report summarizing the findings."
+        ]
+    },
+    "ContractModification": {
+        "assistant_role_name": "Security Testing Engineer",
+        "user_role_name": "Solidity Programming Expert",
+        "phase_prompt": [
+            "Our traget contract codes and corresponding test reports are listed below: ",
+            "Task: \"{task}\".",
+            "Test Reports for the Source Codes:",
+            "\"{test_reports}\"",
+            "Summary of Errors from the Test Reports:",
+            "\"{error_summary}\"",
+            "Please note that when presenting the modified contract code, adhere to the specific markdown code block format. The format is as follows:",
+            "```",
+            "CODE",
+            "```",
+            "As the {assistant_role}, your primary task is to ensure the safe and robust execution of the contract. Based on the provided error summary, make the necessary modifications to the contract codes. Provide the fixed contract codes strictly following the above format. If all issues are addressed, conclude with: \"<INFO> Finished\"."
+        ]
+    }
+}

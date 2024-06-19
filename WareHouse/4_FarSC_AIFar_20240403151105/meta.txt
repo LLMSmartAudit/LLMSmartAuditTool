@@ -1,0 +1,58 @@
+Task:
+pragma solidity ^0.6.8;import "hardhat/console.sol";contract NFTXFeeDistributor is INFTXFeeDistributor, PausableUpgradeable {using SafeERC20Upgradeable for IERC20Upgradeable;bool public distributionPaused;address public override nftxVaultFactory;address public override lpStaking;address public override treasury;uint256 public override defaultTreasuryAlloc;uint256 public override defaultLPAlloc;mapping(uint256 => uint256) public override allocTotal;mapping(uint256 => uint256) public override specificTreasuryAlloc;mapping(uint256 => FeeReceiver[]) feeReceivers;event AddFeeReceiver(uint256 vaultId, address receiver, uint256 allocPoint);event FeeReceiverAllocChange(uint256 vaultId, address receiver, uint256 allocPoint);event RemoveFeeReceiver(uint256 vaultId, address receiver);function __FeeDistributor__init__(address _lpStaking, address _treasury) public override initializer {__Pausable_init();lpStaking = _lpStaking;treasury = _treasury;defaultTreasuryAlloc = 0.2 ether;defaultLPAlloc = 0.5 ether;}function rescue(address token) external override onlyOwner {uint256 balance = IERC20Upgradeable(token).balanceOf(address(this));IERC20Upgradeable(token).transfer(msg.sender, balance);}function distribute(uint256 vaultId) external override {require(nftxVaultFactory != address(0));address _vault = INFTXVaultFactory(nftxVaultFactory).vault(vaultId);uint256 tokenBalance = IERC20Upgradeable(_vault).balanceOf(address(this));if (tokenBalance <= 10**9) {return;}tokenBalance -= 1000;uint256 _treasuryAlloc = specificTreasuryAlloc[vaultId];if (_treasuryAlloc == 0) {_treasuryAlloc = defaultTreasuryAlloc;}uint256 _allocTotal = allocTotal[vaultId] + _treasuryAlloc;uint256 amountToSend = tokenBalance * _treasuryAlloc / _allocTotal;amountToSend = amountToSend > tokenBalance ? tokenBalance : amountToSend;IERC20Upgradeable(_vault).safeTransfer(treasury, amountToSend);if (distributionPaused) {return;}FeeReceiver[] memory _feeReceivers = feeReceivers[vaultId];for (uint256 i = 0; i < _feeReceivers.length; i++) {_sendForReceiver(_feeReceivers[i], vaultId, _vault, tokenBalance, _allocTotal);}}function addReceiver(uint256 _vaultId, uint256 _allocPoint, address _receiver, bool _isContract) external override onlyOwner {_addReceiver(_vaultId, _allocPoint, _receiver, _isContract);}function initializeVaultReceivers(uint256 _vaultId) external override {require(msg.sender == nftxVaultFactory, "FeeReceiver: not factory");_addReceiver(_vaultId, defaultLPAlloc, lpStaking, true);INFTXLPStaking(lpStaking).addPoolForVault(_vaultId);}function changeReceiverAlloc(uint256 _vaultId, uint256 _receiverIdx, uint256 _allocPoint) external override onlyOwner {FeeReceiver storage feeReceiver = feeReceivers[_vaultId][_receiverIdx];allocTotal[_vaultId] -= feeReceiver.allocPoint;feeReceiver.allocPoint = _allocPoint;allocTotal[_vaultId] += _allocPoint;emit FeeReceiverAllocChange(_vaultId, feeReceiver.receiver, _allocPoint);}function changeReceiverAddress(uint256 _vaultId, uint256 _receiverIdx, address _address, bool _isContract) external override onlyOwner {FeeReceiver storage feeReceiver = feeReceivers[_vaultId][_receiverIdx];feeReceiver.receiver = _address;feeReceiver.isContract = _isContract;}function removeReceiver(uint256 _vaultId, uint256 _receiverIdx) external override onlyOwner {FeeReceiver[] storage feeReceiversForVault = feeReceivers[_vaultId];uint256 arrLength = feeReceiversForVault.length;require(_receiverIdx < arrLength, "FeeDistributor: Out of bounds");emit RemoveFeeReceiver(_vaultId, feeReceiversForVault[_receiverIdx].receiver);allocTotal[_vaultId] -= feeReceiversForVault[_receiverIdx].allocPoint;feeReceiversForVault[_receiverIdx] = feeReceiversForVault[arrLength-1];feeReceiversForVault.pop();}function setTreasuryAddress(address _treasury) external override onlyOwner {treasury = _treasury;}function setDefaultTreasuryAlloc(uint256 _allocPoint) external override onlyOwner {defaultTreasuryAlloc = _allocPoint;}function setSpecificTreasuryAlloc(uint256 vaultId, uint256 _allocPoint) external override onlyOwner {specificTreasuryAlloc[vaultId] = _allocPoint;}function setLPStakingAddress(address _lpStaking) external override onlyOwner {lpStaking = _lpStaking;}function setNFTXVaultFactory(address _factory) external override onlyOwner {nftxVaultFactory = _factory;}function setDefaultLPAlloc(uint256 _allocPoint) external override onlyOwner {defaultLPAlloc = _allocPoint;}function pauseFeeDistribution(bool pause) external onlyOwner {distributionPaused = pause;}function rescueTokens(uint256 _address) external override onlyOwner {uint256 balance = IERC20Upgradeable(_address).balanceOf(address(this));IERC20Upgradeable(_address).transfer(msg.sender, balance);}function _addReceiver(uint256 _vaultId, uint256 _allocPoint, address _receiver, bool _isContract) internal {allocTotal[_vaultId] += _allocPoint;FeeReceiver memory _feeReceiver = FeeReceiver(_allocPoint, _receiver, _isContract);feeReceivers[_vaultId].push(_feeReceiver);emit AddFeeReceiver(_vaultId, _receiver, _allocPoint);}function _sendForReceiver(FeeReceiver memory _receiver, uint256 _vaultId, address _vault, uint256 _tokenBalance, uint256 _allocTotal) internal {uint256 amountToSend = _tokenBalance * _receiver.allocPoint / _allocTotal;uint256 balance = IERC20Upgradeable(_vault).balanceOf(address(this)) - 1000;amountToSend = amountToSend > balance ? balance : amountToSend;if (_receiver.isContract) {IERC20Upgradeable(_vault).approve(_receiver.receiver, amountToSend);bytes memory payload = abi.encodeWithSelector(INFTXLPStaking.receiveRewards.selector, _vaultId, amountToSend);(bool success, bytes memory returnData) = address(_receiver.receiver).call(payload);bool tokensReceived = abi.decode(returnData, (bool));if (!success || !tokensReceived) {console.log("treasury fallback");IERC20Upgradeable(_vault).safeTransfer(treasury, amountToSend);}} else {IERC20Upgradeable(_vault).safeTransfer(_receiver.receiver, amountToSend);}}}
+
+Config:
+ChatEnvConfig.clear_structure: True
+ChatEnvConfig.git_management: False
+ChatEnvConfig.gui_design: True
+
+
+Roster:
+Chief Executive Officer, Counselor, Security Analyst, Solidity Programming Expert, Security Testing Engineer
+
+Modality:
+
+
+Ideas:
+ As the Chief Executive Officer, I appreciate the thorough analysis provided by the Security Analyst. Let's refine the points raised to ensure we deliver a robust and secure contract to our customer:
+
+1. **Implement Reentrancy Guard**: We should add a reentrancy guard to critical functions to prevent potential attacks. This can be done by using the `nonReentrant` modifier from OpenZeppelin's ReentrancyGuard contract.
+
+2. **Safeguard Against Integer Overflow/Underflow**: We should use SafeMath library functions for all arithmetic operations to prevent overflow and underflow issues, which are not automatically checked in Solidity 0.6.8.
+
+3. **Replace Magic Numbers with Constants**: Define named constants for magic numbers to improve code readability and maintainability.
+
+4. **Remove `console.log` for Production**: Ensure that `console.log` statements are removed from the production version of the contract as they are meant for debugging purposes only.
+
+5. **Clarify Fallback Transfer Behavior**: We should document and communicate the fallback behavior clearly to users or consider alternative handling that aligns with the expected behavior of fee receivers.
+
+6. **Improve Error Handling**: Replace console logs with `require` statements that provide clear error messages or emit events that can be tracked on-chain.
+
+7. **Implement Role-Based Access Control (RBAC)**: Consider using RBAC for more granular permission control, especially if multiple parties will be interacting with the contract's administrative functions.
+
+8. **Explicitly Declare Function Visibility**: Ensure that all functions have explicitly stated visibility to enhance code clarity and prevent accidental misuse.
+
+9. **Secure Upgrade Process**: Review and test the upgrade process thoroughly to ensure that it is secure and that state variables are correctly managed between upgrades.
+
+10. **Review Token Rescue Function**: Assess the necessity and implementation of the token rescue functions to prevent potential abuse and ensure they align with the intended use case.
+
+11. **Optimize Distribution Logic for Gas Efficiency**: Review the `distribute` function for potential gas optimizations and ensure calculations are accurate, considering integer division rounding.
+
+12. **Enhance Input Validation**: Add checks to functions like `addReceiver` to validate inputs and prevent unexpected behavior.
+
+13. **Ensure Consistent Event Emission**: Audit the contract to ensure that events are emitted consistently for all state changes to provide full transparency to users.
+
+By addressing these points, we can enhance the security, efficiency, and reliability of the contract. Let's agree on the final enhancements to be implemented.
+
+Language:
+
+
+Code_Version:
+0.0
+
+Proposed_images:
+0
+
+Incorporated_images:
+0
+

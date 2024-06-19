@@ -1,0 +1,30 @@
+Task:
+pragma solidity ^0.4.19;contract PrivateBank{mapping (address => uint) public balances;uint public MinDeposit = 1 ether;Log TransferLog;function PrivateBank(address _lib){TransferLog = Log(_lib);}function Deposit()publicpayable{if(msg.value >= MinDeposit){balances[msg.sender]+=msg.value;TransferLog.AddMessage(msg.sender,msg.value,Deposit);}}function CashOut(uint _am){if(_am<=balances[msg.sender]){if(msg.sender.call.value(_am)()){balances[msg.sender]-=_am;TransferLog.AddMessage(msg.sender,_am,CashOut);}}}function() public payable{}}contract Log{struct Message{address Sender;string Data;uint Val;uint Time;}Message[] public History;Message LastMsg;function AddMessage(address _adr,uint _val,string _data)public{LastMsg.Sender = _adr;LastMsg.Time = now;LastMsg.Val = _val;LastMsg.Data = _data;History.push(LastMsg);}}
+
+Config:
+ChatEnvConfig.clear_structure: True
+ChatEnvConfig.git_management: False
+ChatEnvConfig.gui_design: True
+
+
+Roster:
+Chief Executive Officer, Counselor, Security Analyst, Solidity Programming Expert, Security Testing Engineer
+
+Modality:
+
+
+Ideas:
+ Implementing access control mechanisms to restrict certain functions to authorized users only. This can be achieved by maintaining a whitelist of authorized addresses and adding a require statement in the functions that require access control.
+
+Language:
+
+
+Code_Version:
+0.0
+
+Proposed_images:
+0
+
+Incorporated_images:
+0
+
