@@ -1,7 +1,7 @@
 # LLMSmartAuditTool
 The tool of LLMSmartAudit
 
-## 1. install Env
+## 1. Install Env
 pip install -r requirements.txt
 
 ## 2. set your openai key
@@ -22,3 +22,4 @@ python3 run.py --org "" --config "SmartContractTA" --task "" --name ""
 ```python
 python3 online_log/app.py
 ```
+open local web http://127.0.0.1:8000/
