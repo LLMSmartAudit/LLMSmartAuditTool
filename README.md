@@ -1,6 +1,6 @@
 # LLMSmartAuditTool
 The tool of LLMSmartAudit
-<embed src="./framework.pdf" width="600" height="500" type="application/pdf">
+<embed src="framework.pdf" width="600" height="500" type="application/pdf">
 
 
 ## 1. Install Env
