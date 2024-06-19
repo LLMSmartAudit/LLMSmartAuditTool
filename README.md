@@ -1,7 +1,7 @@
 # LLMSmartAuditTool
 The tool of LLMSmartAudit
 
-<img src='framework.png' height=20>
+<img src='framework.png' height=100>
 
 
 ## 1. Install Env
