@@ -26,3 +26,6 @@ python3 run.py --org "" --config "SmartContractTA" --task "" --name ""
 python3 online_log/app.py
 ```
 open local web http://127.0.0.1:8000/
+
+## 4. Display 
+<img src='AuditExample.png' height=400>
