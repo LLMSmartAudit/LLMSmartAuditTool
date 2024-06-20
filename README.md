@@ -11,6 +11,8 @@ pip install -r requirements.txt
 export OPENAI_API_KEY="sky-{}"
 
 ## 3. How to use tool
+Input your solidity smart contract code into `task`
+
 ###  Run BA mode
 ```python
 python3 run.py --org "" --config "SmartContractBA" --task "" --name ""
