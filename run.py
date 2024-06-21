@@ -35,7 +35,7 @@ def get_config(company):
         path to three configuration jsons: [config_path, config_phase_path, config_role_path]
     """
     config_dir = os.path.join(root, "CompanyConfig", company)
-    default_config_dir = os.path.join(root, "CompanyConfig", "Default")
+    default_config_dir = os.path.join(root, "CompanyConfig", "SmartContractBA")
 
     config_files = [
         "ChatChainConfig.json",
@@ -58,11 +58,11 @@ def get_config(company):
 
 
 parser = argparse.ArgumentParser(description='argparse')
-parser.add_argument('--config', type=str, default="Default",
+parser.add_argument('--config', type=str, default="SmartContractBA",
                     help="Name of config, which is used to load configuration under CompanyConfig/")
 parser.add_argument('--org', type=str, default="DefaultOrganization",
                     help="Name of organization, your software will be generated in WareHouse/name_org_timestamp")
-parser.add_argument('--task', type=str, default="Develop a basic Gomoku game.",
+parser.add_argument('--task', type=str, default="List all vulnerabilities in the following solidity smart contract.",
                     help="Prompt of software")
 parser.add_argument('--name', type=str, default="Gomoku",
                     help="Name of software, your software will be generated in WareHouse/name_org_timestamp")
