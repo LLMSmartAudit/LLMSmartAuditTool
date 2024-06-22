@@ -8,9 +8,11 @@ The benchmark datasets for our tool evaluation can be found [here](https://githu
 
 
 ## 1. Install Environment
+```bash
 pip install -r requirements.txt
 
 ## 2. set your openai key
+```bash
 export OPENAI_API_KEY="your_openai_api_key"
 
 ## 3. How to use tool
