@@ -11,7 +11,7 @@ The benchmark datasets for our tool evaluation can be found [here](https://githu
 pip install -r requirements.txt
 
 ## 2. set your openai key
-export OPENAI_API_KEY="sky-"your_openai_api_key"
+export OPENAI_API_KEY="your_openai_api_key"
 
 ## 3. How to use tool
 Input your solidity smart contract code into `task`
