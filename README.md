@@ -2,7 +2,7 @@
 
 LLMSmartAudit is a tool designed to audit smart contracts using advanced language models.
 
-The benchmark for our tool can be found [here](https://github.com/LLMSmartAudit/SmartContract-benchmark).
+The benchmark datasets for our tool evaluation can be found [here](https://github.com/LLMSmartAudit/SmartContract-benchmark).
 
 <img src='framework.png' height=400>
 
@@ -11,7 +11,7 @@ The benchmark for our tool can be found [here](https://github.com/LLMSmartAudit/
 pip install -r requirements.txt
 
 ## 2. set your openai key
-export OPENAI_API_KEY="sky-{}"
+export OPENAI_API_KEY="sky-"your_openai_api_key"
 
 ## 3. How to use tool
 Input your solidity smart contract code into `task`
