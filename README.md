@@ -1,10 +1,13 @@
 # LLMSmartAuditTool
-The tool of LLMSmartAudit
+
+LLMSmartAudit is a tool designed to audit smart contracts using advanced language models.
+
+The benchmark for our tool can be found [here](https://github.com/LLMSmartAudit/SmartContract-benchmark).
 
 <img src='framework.png' height=400>
 
 
-## 1. Install Env
+## 1. Install Environment
 pip install -r requirements.txt
 
 ## 2. set your openai key
